@@ -1,0 +1,6 @@
+// This is the json blob that will be sent to the 
+// client. "command" should be the command you wish
+// to execute
+{
+    "command" : "command"
+}

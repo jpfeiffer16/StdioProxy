@@ -2,6 +2,8 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -18,6 +20,8 @@ namespace stdioproxy
 
         static void Main(string[] args)
         {
+            // var listener = new TcpListener(IPAddress.Loopback, 1234);
+            // listener.Start();
             using (var logStream = new StreamWriter(File.Create(LOG_FILE)))
             using (var proc = Process.Start(new ProcessStartInfo
             {
