@@ -9,22 +9,26 @@ namespace stdioproxy
 {
     class Program
     {
-        private static string HomeFolder = Environment.GetEnvironmentVariable(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "USERPROFILE" : "HOME");
+        // It's a sad day. Someone is on Windows...
+        private static bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        private static string HomeFolder = Environment.GetEnvironmentVariable(IsWindows ? "USERPROFILE" : "HOME");
+
         private const int MAX_BUFFER_SIZE = 2048;
         private static string LOG_FILE = $"{HomeFolder}/stdioproxy.log";
-        private static string OMNISHARP_EXECUTABLE = $"{HomeFolder}/.omnisharp/omnisharp-roslyn/OmniSharp.exe";
-        // private static string OMNISHARP_EXECUTABLE = "/home/jpfeiffer/Source/Razor.VSCode/src/Microsoft.AspNetCore.Razor.LanguageServer/bin/Debug/netcoreapp2.2/publish/linux-x64/rzls";
-        // private static string OMNISHARP_EXECUTABLE = "/home/jpfeiffer/.vscode/extensions/ms-vscode.csharp-1.21.0/.razor/rzls";
+        private static string OMNISHARP_EXECUTABLE = IsWindows
+            ? $"{HomeFolder}/.omnisharp/omnisharp-roslyn/omnisharp/OmniSharp.exe"
+            : $"{HomeFolder}/.cache/omnisharp-vim/omnisharp-roslyn/omnisharp/OmniSharp.exe";
 
         static void Main(string[] args)
         {
+            File.Exists(LOG_FILE) && File.Delete(LOG_FILE);
             using (var logStream = new StreamWriter(File.Create(LOG_FILE)))
             using (var proc = Process.Start(new ProcessStartInfo
             {
-                FileName = OMNISHARP_EXECUTABLE,
+                FileName = IsWindows ? OMNISHARP_EXECUTABLE : "/usr/bin/mono",
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
-                Arguments = string.Join(' ', args)
+                Arguments = (IsWindows ? "" : $"--assembly-loader=strict {OMNISHARP_EXECUTABLE} ") + string.Join(' ', args)
             }))
             {
                 var stdoutTask = Task.Run(() =>
